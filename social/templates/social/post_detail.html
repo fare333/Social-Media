@@ -1,0 +1,124 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-3 col-sm-6">
+            <a href="{% url 'post-list' %}" class="btn btn-light">Back to Feed</a>
+            {% if request.user == post.author %}
+            <a href="{% url 'post-edit' post.pk %}" class="btn btn-light">Edit</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            {% if request.user == post.author %}
+            <a href="{% url 'post-delete' post.pk %}" class="btn btn-danger">Delete Post</a>
+            {% endif %}
+            <p><strong>@<a href="{% url 'profile' post.author.pk %}">{{ post.author }}</a></strong> {{ post.created_on }}</p>
+            {% for img in post.image.all %}
+                        <img src="{{ img.image.url }}" width="150" height="100" />
+            {% endfor %}
+            {% if post.tags %}
+            <p>{{ post.body }}</p>
+            <h4>Tags: </h4>
+                    {% for tag in post.tags.all %}
+                        <a href="{% url 'tag' tag.pk %}">{{tag.name}}</a>
+                    {% endfor %}
+                {% endif %}
+                <br>
+                {% if request.user in post.likes.all %}
+                    <a href="{% url 'remove-like' post.pk %}"><i class="fa fa-thumbs-down"></i></a>
+                    {% else %}
+                    <a href="{% url 'add-like' post.pk %}"><i class="fa fa-thumbs-up"></i></a>
+                {% endif %}
+                <p>{{ post.num_of_likes }}</p>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12">
+            <h5>Add a Comment!</h5>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3 mb-5">
+        <div class="col-md-5 col-sm-12">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form | crispy }}
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success mt-3">Submit!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for comment in post.comment_set.all %}
+    {% if comment.is_parent %}
+    <div class="row justify-content-center mt-3 mb-5">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <p>
+                <div>
+                    <a href="{% url 'profile' comment.author.profile.pk %}">
+                        <img class="round-circle post-img" height="30" width="30" src="{{ comment.author.profile.picture.url }}" />
+                    </a>
+                    <p class="post-text">
+                        <a class="text-primary post-link" href="{% url 'profile' comment.author.profile.pk %}">@{{ comment.author }}</a> {{ comment.created_on }}
+                    </p>
+                </div>
+                {% if request.user == comment.author %}
+                    <a href="{% url 'comment-delete' comment.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
+                {% endif %}
+            </p>
+            <p>{% if comment.tags %}
+            <p>{{ comment.comment }}</p>
+            <h4>Tags:</h4>
+                    {% for tag in comment.tags.all %}
+                        <a href="{% url 'tag' tag.pk %}">{{tag.name}}</a>
+                    {% endfor %}
+                {% endif %}
+            </p>
+            {% if request.user in comment.likes.all %}
+                    <a href="{% url 'comment-unlike' comment.pk %}"><i class="fa fa-thumbs-down"></i></a>
+                    {% else %}
+                    <a href="{% url 'comment-like' comment.pk %}"><i class="fa fa-thumbs-up"></i></a>
+            {% endif %}
+                <p>{{ comment.num_of_likes }}</p>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3 mb-5 d-none" id="{{ comment.pk }}">
+        <div class="col-md-5 col-sm-12">
+            <form method="POST" action="{% url 'comment-reply' post.pk comment.pk %}">
+                {% csrf_token %}
+                {{ form | crispy }}
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success mt-3">Submit!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for child_comment in comment.children %}
+    <div class="row justify-content-center mt-3 mb-5 child-comment">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <p>
+                <div>
+                    <a href="{% url 'profile' child_comment.author.profile.pk %}">
+                        <img class="round-circle post-img" height="30" width="30" src="{{ child_comment.author.profile.picture.url }}" />
+                    </a>
+                    <p class="post-text">
+                        <a class="text-primary post-link" href="{% url 'profile' child_comment.author.profile.pk %}">@{{ child_comment.author }}</a> {{ child_comment.created_on }}
+                    </p>
+                </div>
+                {% if request.user == child_comment.author %}
+                    <a href="{% url 'comment-delete' child_comment.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
+                {% endif %}
+            </p>
+            <p>{{ child_comment.comment }}</p>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock content %}

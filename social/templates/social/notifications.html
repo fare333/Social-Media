@@ -1,0 +1,42 @@
+{% extends "landing/base.html" %}
+{% block content %}
+	<span class="badge bg-primary notification-badge" onclick="showNotifications()">{{ notifications.count }}</span>
+		{% for notification in notifications %}
+			{% if notification.post %}
+				{% if notification.notification_type == 1 %}
+				<div>
+					<a href="{% url 'post-detail' notification.post.pk %}">@{{ notification.from_user }} liked your post</a>
+					<a class="dropdown-item-close" href="{% url 'notification-delete' notification.pk %}">&times;</a>
+				</div>
+				{% elif notification.notification_type == 2 %}
+				<div>
+					<a href="{% url 'post-detail' notification.post.pk %}">@{{ notification.from_user }} commented on your post</a>
+					<a class="dropdown-item-close" href="{% url 'notification-delete' notification.pk %}">&times;</a>
+				</div>
+				{% endif %}
+			{% elif notification.comment %}
+				{% if notification.notification_type == 1 %}
+				<div>
+					<a href="{% url 'notifications' %}">@{{ notification.from_user }} liked your comment</a>
+					<a class="dropdown-item-close" href="{% url 'notification-delete' notification.pk %}">&times;</a>
+				</div>
+				{% elif notification.notification_type == 2 %}
+				<div>
+					<a href="{% url 'notifications' %}">@{{ notification.from_user }} replied to your comment</a>
+					<a class="dropdown-item-close" href="{% url 'notification-delete' notification.pk %}">&times;</a>
+				</div>
+				{% endif %}
+			{% elif notification.thread %}
+				<div>
+					<a href="{% url 'thread' notification.thread.pk %}">@{{ notification.from_user }} sent you a message</a>
+					<a class="dropdown-item-close" href="{% url 'notification-delete' notification.pk %}">&times;</a>
+				</div>
+			{% else %}
+			<div>
+					<a href="{% url 'notifications' %}">@{{ notification.from_user }} has started following you</a>
+					<a class="dropdown-item-close" href="{% url 'notification-delete' notification.pk %}">&times;</a>
+				</div>
+			{% endif %}
+			{% endfor %}
+		</div>
+{% endblock %}

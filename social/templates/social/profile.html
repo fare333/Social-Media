@@ -1,0 +1,71 @@
+{% extends 'landing/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-3 col-sm-6">
+            <a href="{% url 'post-list' %}" class="btn btn-light">Back to Feed</a>
+            {% if request.user in profile.followers.all %}
+            <a href="{% url 'remove-follower' profile.pk %}" class="btn btn-danger">Unfollow</a>
+            {% else %}
+            <a href="{% url 'add-follower' profile.pk %}" class="btn btn-info">Follow</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-5">
+        <div class="card shadow-sm col-md-8 col-sm-12 border-bottom px-5 pt-3">
+            <img src="{{ profile.picture.url }}" class="rounded-circle" width="100" height="100" />
+            <h4 ><a href="{% url 'followers_list' profile.pk %}">Followers: {{ profile.followers_no }}</a></h4>
+            {% if profile.name %}
+            <h3 class="py-4">{{ profile.name }}
+                <span>
+                    {% if request.user == user %}
+                        <a href="{% url 'profile-edit' profile.pk %}" style="color: #333"><i class="far fa-edit"></i></a>
+                    {% endif %}
+                </span>
+                {% else %}
+                <h3 class="py-4">{{ profile.user.username }}
+                    <span>
+                        {% if request.user == user %}
+                            <a href="{% url 'profile-update' profile.pk %}" style="color: #333"><i class="far fa-edit"></i></a>
+                        {% endif %}
+                    </span>
+                </h3>
+                {% endif %}
+            </h3>
+
+            {% if profile.location %}
+            <p>{{ profile.location }}</p>
+            {% endif %}
+
+            {% if profile.birth_date %}
+            <p>{{ profile.birth_date }}</p>
+            {% endif %}
+
+            {% if profile.bio %}
+            <p>{{ profile.bio }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% for post in posts %}
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8 col-sm-12 border-bottom position-relative">
+            <p><strong>{{ post.author }}</strong> {{ post.created_on }}</p>
+            {% for img in post.image.all %}
+                    <img src="{{ img.image.url }}" width="150" height="100" />
+            {% endfor %}
+            <p>{{ post.body }}</p>
+            {% if request.user in post.likes.all %}
+                    <a href="{% url 'remove-like' post.pk %}"><i class="fa fa-thumbs-down"></i></a>
+                    {% else %}
+                    <a href="{% url 'add-like' post.pk %}"><i class="fa fa-thumbs-up"></i></a>
+                {% endif %}
+                <p>{{ post.num_of_likes }}</p>
+            <a href="{% url 'post-detail' post.pk %}">See Post</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}

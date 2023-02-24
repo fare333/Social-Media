@@ -1,0 +1,103 @@
+{% include 'landing/base.html' %}
+
+{% block content %}
+{% for post in posts %}
+<div class="row justify-content-center mt-3">
+    <div class="col-md-5 col-sm-12 border-bottom position-relative">
+        {% if post.shared_user %}
+    <div>
+        <a href="{% url 'profile' post.shared_user.profile.pk %}">
+            <img class="round-circle post-img" height="30" width="30" src="{{ post.shared_user.profile.picture.url }}" />
+        </a>
+        <p class="post-text">
+            <a class="text-primary post-link" href="{% url 'profile' post.shared_user.profile.pk %}">@{{ post.shared_user }}</a> shared a post on {{ post.shared_on }}
+        </p>
+    </div>
+    {% else %}
+    <div>
+        <a href="{% url 'profile' post.author.profile.pk %}">
+            <img class="round-circle post-img" height="30" width="30" src="{{ post.author.profile.picture.url }}" />
+        </a>
+        <p class="post-text">
+            <a class="text-primary post-link" href="{% url 'profile' post.author.profile.pk %}">@{{ post.author }}</a> {{ post.created_on }}<form method="POST" action="{% url 'post-share' post.pk %}">
+                {% csrf_token %}
+                <button type="submit"><i class="fas fa-share-alt"></i></button>
+            </form>
+        </p>
+    </div>
+   
+    {% endif %}
+    {% if post.shared_body %}
+    <div class="position-relative border-bottom mb-3">
+        <p>{{ post.shared_body }}</p>
+    </div>
+    <div class="shared-post">
+        <a href="{% url 'profile' post.author.profile.pk %}">
+            <img class="round-circle post-img" height="30" width="30" src="{{ post.author.profile.picture.url }}" />
+        </a>
+        <p class="post-text">
+            <a class="text-primary post-link" href="{% url 'profile' post.author.profile.pk %}">@{{ post.author }}</a> {{ post.created_on }}
+        </p>
+    </div>
+    {% endif %}
+    <div class="shared-post position-relative pt-3">
+        {% if post.image.count > 0 %}
+          <div class="row">
+            {% for img in post.image.all %}
+                <div class="col-md-4 col-xs-12">
+                    <img src="{{ img.image.url }}" width="130" height="130" />
+                </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <p>{{ post.body }}</p>
+        <a href="{% url 'post-detail' post.pk %}" class="stretched-link"></a>
+    </div>
+
+        {% if request.user in post.likes.all %}
+            <a href="{% url 'remove-like' post.pk %}"><i class="fa fa-thumbs-down"></i></a>
+            {% else %}
+            <a href="{% url 'add-like' post.pk %}"><i class="fa fa-thumbs-up"></i></a>
+        {% endif %}
+        <p>{{ post.num_of_likes }}</p>
+    </div>
+</div>
+{% endfor %}
+{% if comments %}
+{% for comment in comments %}
+    <div class="row justify-content-center mt-3 mb-5">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <p>
+                <div>
+                    <a href="{% url 'profile' comment.author.profile.pk %}">
+                        <img class="round-circle post-img" height="30" width="30" src="{{ comment.author.profile.picture.url }}" />
+                    </a>
+                    <p class="post-text">
+                        <a class="text-primary post-link" href="{% url 'profile' comment.author.profile.pk %}">@{{ comment.author }}</a> {{ comment.created_on }}
+                    </p>
+                </div>
+                {% if request.user == comment.author %}
+                    <a href="{% url 'comment-delete' comment.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
+                {% endif %}
+            </p>
+            <p>{% if comment.tags %}
+            <p>{{ comment.comment }}</p>
+            <h4>Tags:</h4>
+                    {% for tag in comment.tags.all %}
+                        <a href="{% url 'tag' tag.pk %}">{{tag.name}}</a>
+                    {% endfor %}
+                {% endif %}
+            </p>
+            {% if request.user in comment.likes.all %}
+                    <a href="{% url 'comment-unlike' comment.pk %}"><i class="fa fa-thumbs-down"></i></a>
+                    {% else %}
+                    <a href="{% url 'comment-like' comment.pk %}"><i class="fa fa-thumbs-up"></i></a>
+            {% endif %}
+                <p>{{ comment.num_of_likes }}</p>
+        </div>
+    </div>
+   
+{% endfor %}
+{% endif %}
+
+{% endblock %}
